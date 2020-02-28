@@ -37,4 +37,14 @@ Map任务可以在群集中的任何计算节点上运行，并且多个Map任�
 5.  Reducer接收具有以下格式的键/值对：<{WORD}，[1，.... 1]>。也就是说，Reducer接收到的键/值对是从任何Mappers发出的单词， Reducer输入键/值的示例如下：
 - <the，[1,1,1，...，1]>
 - <test，[1,1]>
-6.
+6. Reducer只需将1加起来即可提供{WORD}的最终计数，并将结果作为以下键/值对发送到输出：<{WORD}，{COUNT OF WORD}>。 Reducer输出的示例如下：
+- <the，1000101>
+- <test，2>
+5. Reducer接收具有以下格式的键/值对：<{WORD}，[1，.... 1]>。也就是说，Reducer接收到的键/值对使得键是从任何Mappers <WORD>发出的单词，并且值是由键传递的值（[1，.... 1]）的列表这个单词的任何映射器。 Reducer输入键/值的示例如下：
+•<the，[1,1,1，...，1]>
+•<测试，[1,1]>
+6. Reducer只需将1加起来即可提供{WORD}的最终计数，并将结果作为以下键/值对发送到输出：<{WORD}，{COUNT OF WORD}>。 Reducer输出的示例如下：
+•<the，1000101>
+•<test，2>
+
+在reduce阶段中接收键值列表的键是MapReduce中称为sort / shuffle阶段的阶段。映射器发出的所有键/值对均按Reducer中的键排序。如果分配了多个Reducer，则会将一个键的子集分配给每个Reducer。给定Reducer的键/值对按键排序，以确保与Reducer一起接收与一个键关联的所有值。
