@@ -40,11 +40,24 @@ Map任务可以在群集中的任何计算节点上运行，并且多个Map任�
 6. Reducer只需将1加起来即可提供{WORD}的最终计数，并将结果作为以下键/值对发送到输出：<{WORD}，{COUNT OF WORD}>。 Reducer输出的示例如下：
 - <the，1000101>
 - <test，2>
-5. Reducer接收具有以下格式的键/值对：<{WORD}，[1，.... 1]>。也就是说，Reducer接收到的键/值对使得键是从任何Mappers <WORD>发出的单词，并且值是由键传递的值（[1，.... 1]）的列表这个单词的任何映射器。 Reducer输入键/值的示例如下：
-•<the，[1,1,1，...，1]>
-•<测试，[1,1]>
-6. Reducer只需将1加起来即可提供{WORD}的最终计数，并将结果作为以下键/值对发送到输出：<{WORD}，{COUNT OF WORD}>。 Reducer输出的示例如下：
-•<the，1000101>
-•<test，2>
 
 在reduce阶段中接收键值列表的键是MapReduce中称为sort / shuffle阶段的阶段。映射器发出的所有键/值对均按Reducer中的键排序。如果分配了多个Reducer，则会将一个键的子集分配给每个Reducer。给定Reducer的键/值对按键排序，以确保与Reducer一起接收与一个键关联的所有值。
+
+# Hadoop组成
+在本节中，我们将开始深入研究Hadoop的各个组件。 我们将从Hadoop 1.x组件开始，最后讨论新的2.x组件。 Hadoop 1.x在较高级别上具有以下守护程序：
+1. NameNode：维护HDFS中存储的每个文件的元数据。 元数据包括有关包含文件的块的信息以及它们在数据节点上的位置。 正如您将很快看到的，这是1.x的组件之一，成为大型集群的瓶颈。
+2. Secondary NameNode：这不是backup NameNode。 它为NameNode执行一些内部管理功能。
+3. DataNode：将文件的实际块存储在HDFS自身的本地磁盘上。
+4. JobTracker：主组件之一，它负责管理作业的整体执行。 它执行的功能包括将子任务（单独的Mapper和Reducer）调度到各个节点，跟踪每个任务和节点的运行状况，甚至重新调度失败的任务。 正如我们将很快演示的，就像NameNode一样，在将Hadoop扩展到超大型集群时，Job Tracker成为瓶颈。
+5. TaskTracker：在单个DataNode上运行，并负责启动和管理单个Map / Reduce任务。 与JobTracker通信。
+
+Hadoop 1.x集群具有两种类型的节点：master nodes和slave nodes。 master nodes负责运行以下守护程序：
+- NameNode
+- 次要NameNode
+- JobTracker
+
+slave nodes分布在整个群集中，并运行以下守护程序：
+- 数据节点
+- TaskTracker
+
+尽管每个主守护程序只有一个实例在整个集群上运行，但是DataNode和TaskTracker却有多个实例。 在较小的集群或开发/测试集群上，通常三个主守护程序都在同一台计算机上运行。 但是，对于生产系统或大型集群，将它们放在单独的节点上更为谨慎。
