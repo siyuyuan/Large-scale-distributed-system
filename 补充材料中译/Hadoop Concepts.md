@@ -53,11 +53,18 @@ Map任务可以在群集中的任何计算节点上运行，并且多个Map任�
 
 Hadoop 1.x集群具有两种类型的节点：master nodes和slave nodes。 master nodes负责运行以下守护程序：
 - NameNode
-- 次要NameNode
+- Secondary NameNode
 - JobTracker
 
 slave nodes分布在整个群集中，并运行以下守护程序：
-- 数据节点
+- DataNode
 - TaskTracker
 
+尽管每个主守护程序只有一个实例在整个集群上运行，但是DataNode和TaskTracker却有多个实例。 在较小的集群或开发/测试集群上，通常三个主守护程序都在同一台计算机上运行。 但是，对于生产系统或大型集群，将它们放在单独的节点上更为谨慎。
+
+# Hadoop Distributed File System (HDFS)
+HDFS旨在支持使用非常大文件的应用程序。这样的应用程序写一次数据，并多次读取相同的数据。HDFS是以下几个守护进程共同作用的结果：
+- NameNode
+- Secondary NameNode
+- DataNode
 尽管每个主守护程序只有一个实例在整个集群上运行，但是DataNode和TaskTracker却有多个实例。 在较小的集群或开发/测试集群上，通常三个主守护程序都在同一台计算机上运行。 但是，对于生产系统或大型集群，将它们放在单独的节点上更为谨慎。
