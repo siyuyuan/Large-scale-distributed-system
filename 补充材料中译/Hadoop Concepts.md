@@ -173,6 +173,7 @@ YARN系统具有以下组件：
 - Application-specific Application Master
 - Scheduler
 - Container
+
 Container包括CPU内核总数和主内存大小的子集。应用程序将在一组Container中运行。 Application Master实例将向Global Resource Manager请求资源。Scheduler将通过每个节点的Node Manager分配资源（容器）。然后，Node Manager将向Resource Manager报告各个容器的使用情况。
 Global Resource Manager和每个节点的Node Manager构成了新MapReduce框架的管理系统。Resource Manager是分配资源的最终权限。每种应用程序类型都有一个应用程序主机。 （例如，MapReduce是一种类型，每个MapReduce作业都是MapReduce类型的实例，类似于面向对象编程中的类和对象关系）。对于应用程序类型的每个应用程序，将实例化一个Application Master实例。 Application Master实例与Resource Manager协商Container以执行作业。Resource Manager与每个节点的Node Manager一起使用调度程序（全局组件）来分配这些资源。从系统角度来看，Application Master也可以在Container中运行。
 
