@@ -141,4 +141,17 @@ edits文件的目标是在系统运行期间保存更改记录。如果重新启
 现在应该清楚为什么NameNode是Hadoop 1.x中的单点故障。如果fsimage和edits files文件损坏，则HDFS系统中的所有数据都将丢失。因此，尽管DataNode可以简单地是带有JBOD的商用机器（这意味着“只是一堆磁盘”），但NameNode和Secondary NameNode必须连接到更可靠的存储（基于RAID），以确保不会丢失数据。前面提到的两个文件也必须定期备份。如果需要在备份上还原它们，则从现在到进行备份之前的所有更新都将丢失。下面总结了使NameNode支持HDFS的关键文件。
 1. fsimage包含截至最后一个检查点的HDFS元数据的持久状态
 2. edits包含自上一个检查点以来HDFS元数据的状态更改
-4. fstime包含最后一个检查点的时间戳
+3. fstime包含最后一个检查点的时间戳
+
+## TaskTracker
+运行在Hadoop群集的每个计算节点上的TaskTracker守护程序接受对单个任务（例如Map，Reduce和Shuffle操作）的请求。 每个TaskTracker均配置有一组插槽，通常将其设置为计算机上可用内核的总数。 当收到（来自JobTracker的）启动任务的请求时，TaskTracker会为该任务启动一个新的JVM。 可以重用JVM，但是很难获得此功能的实际使用示例。 Hadoop平台的大多数用户只是将其关闭。 根据TaskTracker的可用插槽数量为其分配任务（任务总数=正在运行的实际任务）。 TaskTracker负责将心跳消息发送到JobTracker。 这些消息除了告诉JobTracker运行状况良好之外，还告诉JobTracker可用插槽的数量。
+
+## JobTracker
+JobTracker守护程序负责启动和监视MapReduce作业。以下步骤详细介绍了该过程：
+1. Job Tracker接收到作业请求。
+2. 大多数MapReduce作业需要一个或多个输入目录。Job Tracker向NameNode请求一个DataNodes列表，该DataNodes托管输入目录列表中包含的文件的块。
+3. JobTracker现在计划执行作业。在此步骤中，JobTracker确定执行作业所需的任务数（Map任务和Reduce任务）。它还尝试将任务安排在尽可能靠近数据块的位置。
+4. JobTracker将任务提交到每个TaskTracker节点以执行。监视TaskTracker节点的运行状况。它们以预定义的时间间隔将心跳消息发送到JobTracker节点。如果在预定义的时间内未收到心跳消息，则TaskTracker节点将被视为失败，并且将任务重新安排为在单独的节点上运行。
+5. 完成所有任务后，JobTracker会将作业状态更新为成功。如果一定数量的任务反复失败（确切的数量是通过Hadoop配置文件中的配置指定的），则JobTracker会宣布作业失败。
+6. 客户端轮询JobTracker以获取有关Job进度的更新。
+到目前为止，有关Hadoop 1.x组件的讨论应该清楚地表明，即使JobTracker也是单点故障。如果JobTracker发生故障，则具有正在运行的作业的整个群集也会发生故障。另外，只有一个JobTracker，这会在同时运行多个作业的环境中增加单个JobTracker的负载。
