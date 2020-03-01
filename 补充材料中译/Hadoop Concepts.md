@@ -166,3 +166,14 @@ YARN的目的是将这些功能分成单独的守护程序，要实现这个需�
 YARN还旨在将Hadoop的实用程序扩展到MapReduce之外。在以下各章中，我们将发现MapReduce框架的各种局限性。为了解决这些局限性，已经开发了更新的框架。例如，Apache Hive带来了Hadoop之上的SQL特性，Apache PIG解决了基于脚本、数据流风格处理的问题。即使是更新的框架，如Apache HAMA，也会处理迭代计算，这在机器学习风格的用例中非常典型。
 
 Spark/Shark框架是Hive和HAMA之间的交叉，提供低延迟的SQL访问以及一些内存计算。尽管这些框架都设计为在HDFS上工作，但并不是所有的框架都是Hadoop框架的一等公民。我们需要的是一个总体框架,该框架可以支持具有不同计算原理的更新框架（不仅是MapReduce模型），例如基于HAMA的批量同步并行（BSP）模型或基于HAMA的内存中缓存和计算模型。新框架应从头开始设计，以支持新类型的应用程序，同时仍在整个Hadoop系统中运行。即使所有系统共享相同的基础HDFS，这也将使围绕安全性和资源管理的系统范围的策略得以一致地应用。
+
+YARN系统具有以下组件：
+- Global Resource Manager
+- Node Manager
+- Application-specific Application Master
+- Scheduler
+- Container
+Container包括CPU内核总数和主内存大小的子集。应用程序将在一组Container中运行。 Application Master实例将向Global Resource Manager请求资源。Scheduler将通过每个节点的Node Manager分配资源（容器）。然后，Node Manager将向Resource Manager报告各个容器的使用情况。
+Global Resource Manager和每个节点的Node Manager构成了新MapReduce框架的管理系统。Resource Manager是分配资源的最终权限。每种应用程序类型都有一个应用程序主机。 （例如，MapReduce是一种类型，每个MapReduce作业都是MapReduce类型的实例，类似于面向对象编程中的类和对象关系）。对于应用程序类型的每个应用程序，将实例化一个Application Master实例。 Application Master实例与Resource Manager协商Container以执行作业。Resource Manager与每个节点的Node Manager一起使用调度程序（全局组件）来分配这些资源。从系统角度来看，Application Master也可以在Container中运行。
+
+MapReduce v1框架已被重用，没有进行任何重大修改，这将使它与现有MapReduce程序向后兼容。
