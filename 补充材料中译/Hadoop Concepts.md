@@ -129,4 +129,16 @@ Hadoop和HDFS旨在抵抗故障。数据丢失可以通过两种方式发生：
 
 之前已了解到NameNode将其所有元数据保留在内存中。 它首先从存储在NameNode本地文件系统中的fsimagefile中读取它。 在Hadoop系统操作过程中，对NameNode内容的更新将应用到内存中。 但是，为了确保不会丢失数据，这些编辑操作还将应用于称为“编辑”的本地文件。
 
+fsimage文件实际上并不存储块的位置。 它在系统启动期间从每个DataNode获取此信息，并将其保存在内存中。
 
+edits文件的目标是在系统运行期间保存更改记录。如果重新启动系统，则可以在重新启动期间将edits文件的内容转移到fsimage中。但是，这会减慢Hadoop的重启速度。因此，程序员创建Secondary NameNode来处理此问题。Secondary NameNode的作用是定期合并fsimage文件中edits文件的内容。为此，Secondary NameNode定期执行以下步骤：
+1. 它要求主服务器滚过编辑文件，这将确保新编辑转到新文件。这个新文件称为edit .new。
+2. Secondary NameNode向主节点请求fsimage文件和edits文件。
+3. Secondary NameNode将fsimage文件和edits文件合并到新的fsimage文件中。
+4. NameNode从Secondary NameNode接收新的fsimage文件，并用它替换旧文件，随后将edits文件替换为第一步中创建的edits.new文件的内容。
+5. 更新fstime文件以记录发生检查点操作的时间。
+
+现在应该清楚为什么NameNode是Hadoop 1.x中的单点故障。如果fsimage和edits files文件损坏，则HDFS系统中的所有数据都将丢失。因此，尽管DataNode可以简单地是带有JBOD的商用机器（这意味着“只是一堆磁盘”），但NameNode和Secondary NameNode必须连接到更可靠的存储（基于RAID），以确保不会丢失数据。前面提到的两个文件也必须定期备份。如果需要在备份上还原它们，则从现在到进行备份之前的所有更新都将丢失。下面总结了使NameNode支持HDFS的关键文件。
+1. fsimage包含截至最后一个检查点的HDFS元数据的持久状态
+2. edits包含自上一个检查点以来HDFS元数据的状态更改
+4. fstime包含最后一个检查点的时间戳
