@@ -155,3 +155,14 @@ JobTracker守护程序负责启动和监视MapReduce作业。以下步骤详细�
 5. 完成所有任务后，JobTracker会将作业状态更新为成功。如果一定数量的任务反复失败（确切的数量是通过Hadoop配置文件中的配置指定的），则JobTracker会宣布作业失败。
 6. 客户端轮询JobTracker以获取有关Job进度的更新。
 到目前为止，有关Hadoop 1.x组件的讨论应该清楚地表明，即使JobTracker也是单点故障。如果JobTracker发生故障，则具有正在运行的作业的整个群集也会发生故障。另外，只有一个JobTracker，这会在同时运行多个作业的环境中增加单个JobTracker的负载。
+
+# Hadoop 2.0
+Hadoop 2.0，亦称为MapReduce 2.0（MR v2）或YARN。本书通常将版本称为2.x，因为预期该版本不会以任何根本方式改变行为和体系结构。MR v2是与MR v1兼容的应用程序编程接口（API），仅需重新编译即可。但是，基础体系结构已被彻底修改。在Hadoop 1.x中，JobScheduler具有两个主要功能：
+- 资源管理
+- Job scheduling/job monitoring
+YARN的目的是将这些功能分成单独的守护程序，要实现这个需要拥有一个全局资源管理器和一个per–application的应用程序主机。注意，我们提到的是应用程序，而不是工作。在新的Hadoop 2.x中，应用程序可以是传统MapReduce作业中的单个作业，也可以是有向非循环图（DAG）
+的工作。 DAG作业表示彼此之间具有层次关系的作业。
+
+YARN还旨在将Hadoop的实用程序扩展到MapReduce之外。在以下各章中，我们将发现MapReduce框架的各种局限性。为了解决这些局限性，已经开发了更新的框架。例如，Apache Hive带来了Hadoop之上的SQL特性，Apache PIG解决了基于脚本、数据流风格处理的问题。即使是更新的框架，如Apache HAMA，也会处理迭代计算，这在机器学习风格的用例中非常典型。
+
+Spark/Shark框架是Hive和HAMA之间的交叉，提供低延迟的SQL访问以及一些内存计算。尽管这些框架都设计为在HDFS上工作，但并不是所有的框架都是Hadoop框架的一等公民。我们需要的是一个总体框架,该框架可以支持具有不同计算原理的更新框架（不仅是MapReduce模型），例如基于HAMA的批量同步并行（BSP）模型或基于HAMA的内存中缓存和计算模型。新框架应从头开始设计，以支持新类型的应用程序，同时仍在整个Hadoop系统中运行。即使所有系统共享相同的基础HDFS，这也将使围绕安全性和资源管理的系统范围的策略得以一致地应用。
