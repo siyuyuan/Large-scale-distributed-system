@@ -220,3 +220,5 @@ Application Master是旧版MapReduce v1框架和YARN之间的主要区别。 App
 4. 在运行期间，Application Master通过资源请求从Resource Manager协商资源。资源请求还包括在其上请求Container的节点以及Container的规范（CPU代码和内存规格）。
 5. 在启动的Container中执行的应用程序代码通过特定于应用程序的协议将其进度报告给Application Master（可能是远程的）。
 6. 客户端程序通过特定于应用程序的协议与Application Master进行通信。客户端通过查询在步骤3中向其注册的Resource Manager来引用应用程序主机。
+
+一旦应用程序完成执行，Application Master将取消与Resource Manager的注册，所使用的容器将释放回系统。
