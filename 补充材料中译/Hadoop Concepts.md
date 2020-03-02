@@ -199,3 +199,15 @@ Container是YARN框架中的计算单元。它是一个工作单元所在的子�
 节点管理器仅负责管理容器的抽象概念。 它不包含有关单个应用程序或应用程序类型的任何知识。 将此责任委托给一个称为“Application Master”的组件。 但是在讨论Application Master之前，让我们简要地访问资源管理器（Resource Manager）。
 
 ## Resource Manager
+Resource Manager主要是一个调度程序：它在竞争的应用程序之间仲裁资源，以确保最佳的群集利用率。Resource Manager具有一个可插拔的调度程序，该调度程序负责按照各种常见的Container和队列约束，将资源分配给各种正在运行的应用程序。 调度程序的示例包括Hadoop中的Capacity Scheduler和Fair Scheduler，我们将在随后的章节中同时遇到这两者。创建、提供和监视资源的实际任务委托给每个节点Node Manager。这种关注点的分离使得Resource Manager比传统的JobScheduler可扩展得更多。
+
+## Application Master
+Application Master是旧版MapReduce v1框架和YARN之间的主要区别。 Application Master是特定于框架的库的实例。它从Resource Manager协商资源，并与Node Manager一起获取这些资源并执行其任务。Application Master是从Resource Manager协商资源容器的组件。Application Master带给YARN框架的主要好处是：
+- Improved scalability
+- A more generic framework
+
+在MapReduce v1中，JobTracker负责管理任务故障转移。 JobTracker还负责为工作分配资源。 v2中的可伸缩性得到了改善，因为Resource Manager（JobTracker的替代品）现在仅负责调度。管理作业或应用程序的任务在于Application Master。如果任务失败，Application Master将协商Resource Manager中的资源并尝试重新执行任务。
+
+在MapReduce v1中，Hadoop框架仅支持MapReduce类型的作业，它不是通用框架。主要原因是诸如JobTracker和TaskTracker之类的关键组件是在设计中深深植根于Map和Reduce任务概念的基础上开发的。随着MapReduce受到越来越多的关注，人们发现使用MapReduce进行某些类型的计算是不切实际的。因此，开发了新框架，例如基于Apache HAMA和Apache Giraph的BSP框架。他们很好地完成了图形计算，并且与HDFS配合得很好。在撰写本文时，诸如Shark / Spark之类的内存中框架正逐渐受到关注。尽管它们也可以与HDFS很好地配合使用，但是由于它们是使用非常不同的计算原理设计的，因此它们不适合Hadoop1.x。
+
+作为YARN的一部分在v2中引入Application Master方法将改变所有这一切。通过将各个设计理念嵌入到Application Master中，可以使多个框架共存于单个受管系统中。因此，尽管Hadoop / HAMA / Shark在Hadoop 1.x的同一HDFS上的单独管理的系统上运行，导致意外的系统和资源冲突，但它们现在可以在同一Hadoop 2.x系统中运行。他们都将从Resource Manager中仲裁资源。 YARN将使Hadoop系统变得更加普及。 Hadoop现在将不仅支持MapReduce风格的计算，而且可插拔性更高：如果发现新系统可以更好地与某些类型的计算配合使用，则可以开发其应用程序母版并将其插入Hadoop系统。现在，Application Master概念允许Hadoop扩展到MapReduce之外，并使MapReduce与其他框架共存并合作。
