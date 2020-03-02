@@ -198,4 +198,4 @@ Container是YARN框架中的计算单元。它是一个工作单元所在的子�
 
 节点管理器仅负责管理容器的抽象概念。 它不包含有关单个应用程序或应用程序类型的任何知识。 将此责任委托给一个称为“Application Master”的组件。 但是在讨论Application Master之前，让我们简要地访问资源管理器（Resource Manager）。
 
-
+## Resource Manager
