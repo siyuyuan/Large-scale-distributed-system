@@ -211,3 +211,12 @@ Application Master是旧版MapReduce v1框架和YARN之间的主要区别。 App
 在MapReduce v1中，Hadoop框架仅支持MapReduce类型的作业，它不是通用框架。主要原因是诸如JobTracker和TaskTracker之类的关键组件是在设计中深深植根于Map和Reduce任务概念的基础上开发的。随着MapReduce受到越来越多的关注，人们发现使用MapReduce进行某些类型的计算是不切实际的。因此，开发了新框架，例如基于Apache HAMA和Apache Giraph的BSP框架。他们很好地完成了图形计算，并且与HDFS配合得很好。在撰写本文时，诸如Shark / Spark之类的内存中框架正逐渐受到关注。尽管它们也可以与HDFS很好地配合使用，但是由于它们是使用非常不同的计算原理设计的，因此它们不适合Hadoop1.x。
 
 作为YARN的一部分在v2中引入Application Master方法将改变所有这一切。通过将各个设计理念嵌入到Application Master中，可以使多个框架共存于单个受管系统中。因此，尽管Hadoop / HAMA / Shark在Hadoop 1.x的同一HDFS上的单独管理的系统上运行，导致意外的系统和资源冲突，但它们现在可以在同一Hadoop 2.x系统中运行。他们都将从Resource Manager中仲裁资源。 YARN将使Hadoop系统变得更加普及。 Hadoop现在将不仅支持MapReduce风格的计算，而且可插拔性更高：如果发现新系统可以更好地与某些类型的计算配合使用，则可以开发其应用程序母版并将其插入Hadoop系统。现在，Application Master概念允许Hadoop扩展到MapReduce之外，并使MapReduce与其他框架共存并合作。
+
+# Anatomy of a YARN Request
+当用户向Hadoop 2.x框架提交作业时，底层的YARN框架将处理请求。以下是使用的步骤：
+1. 客户程序提交申请。还指定了反过来决定Application Master的应用程序类型。
+2. Resource Manager协商资源以获取节点上的Container以启动Application Master的实例。
+3. Application Master在Resource Manager中注册。通过此注册，客户端可以查询Resource Manager以获取有关Application Master的详细信息。因此，客户机将通过自己的Resource Manage与它启动的Application Master进行通信。
+4. 在运行期间，Application Master通过资源请求从Resource Manager协商资源。资源请求还包括在其上请求Container的节点以及Container的规范（CPU代码和内存规格）。
+5. 在启动的Container中执行的应用程序代码通过特定于应用程序的协议将其进度报告给Application Master（可能是远程的）。
+6. 客户端程序通过特定于应用程序的协议与Application Master进行通信。客户端通过查询在步骤3中向其注册的Resource Manager来引用应用程序主机。
